@@ -3,6 +3,7 @@ include ('../app/config.php');
 include ('../layout/sesion.php');
 include ('../layout/parte1.php'); 
 include('../app/controllers/ventas/listado_de_ventas.php');
+include('../app/controllers/ventas/listado_de_ventas_externas.php');
 
 
 if(isset($_SESSION['mensaje1'])) {
@@ -182,7 +183,6 @@ if(isset($_SESSION['mensaje6'])) {
                                           
                                     <?php  
                                       }
-                                      
                                     ?>
 
                                     <tr>
@@ -290,7 +290,7 @@ if(isset($_SESSION['mensaje6'])) {
                                 <center>
                                     <a href="show.php?id_venta=<?php echo $dato_ventas['id_venta']; ?>" class="btn btn-primary">Mostrar</a>
                                     <a href="delete.php?id_venta=<?php echo $dato_ventas['id_venta']; ?>&nro_venta=<?php echo $nro_venta;?>" class="btn btn-danger">Eliminar</a>
-                                    <a href="factura.php?id_venta=<?php echo $dato_ventas['id_venta']; ?>" class="btn btn-success">Factura</a>
+                                    
                                 </center>
                             </td>
 
@@ -312,6 +312,66 @@ if(isset($_SESSION['mensaje6'])) {
             </div>
 
         <!-- /.row -->
+            <div class="row">
+              <div class="col-md-12">
+                <div class="card card-outline card-secondary">
+                  <div class="card-header">
+                    <h3 class="card-title">Ventas Externas (Railway)</h3>
+                    <div class="card-tools">
+                      <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table id="example_ext" class="table table-bordered table-striped">
+                        <thead>
+                          <tr>
+                            <th><center>#</center></th>
+                            <th><center>Nombre</center></th>
+                            <th><center>Cantidad</center></th>
+                            <th><center>Ubicaciones</center></th>
+                            <th><center>Monto a Cancelar</center></th>
+                            <th><center>Acción</center></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <?php $i=0; foreach(($datos_ventas_externas ?? []) as $ve){ ?>
+                            <tr>
+                              <td><center><?php echo ++$i; ?></center></td>
+                              <td><center><?php echo htmlspecialchars($ve['nombre']); ?></center></td>
+                              <td><center><?php echo htmlspecialchars($ve['stock_total']); ?></center></td>
+                              <td><center><?php echo htmlspecialchars($ve['ubicaciones']); ?></center></td>
+                              <td><center><?php echo htmlspecialchars($ve['precio']); ?></center></td>
+                              <td><center>
+                                <a href="../app/controllers/ventas/delete_venta_externa.php?id_producto=<?php echo urlencode($ve['id_producto']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta venta externa y revertir el stock?');">
+                                  Eliminar
+                                </a>
+                              </center></td>
+                            </tr>
+                          <?php } ?>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <script>
+            $(function(){
+              $("#example_ext").DataTable({
+                pageLength:5,
+                language:{
+                  emptyTable:"No hay información",
+                  info:"Mostrando _START_ a _END_ de _TOTAL_ Ventas externas",
+                  lengthMenu:"Mostrar _MENU_",
+                  search:"Buscador:",
+                  zeroRecords:"Sin resultados",
+                  paginate:{first:"Primero",last:"Último",next:"Siguiente",previous:"Anterior"}
+                },
+                responsive:true, lengthChange:true, autoWidth:false
+              });
+            });
+            </script>
       </div><!-- /.container-fluid -->
     </div>
     <!-- /.content -->

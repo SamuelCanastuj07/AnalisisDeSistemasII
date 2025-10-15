@@ -175,7 +175,6 @@ if(isset($_SESSION['mensaje1'])) {
                                           
                                     <?php  
                                       }
-                                      
                                     ?>
 
                                     <tr>

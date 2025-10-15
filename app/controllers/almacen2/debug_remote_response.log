@@ -1,0 +1,27 @@
+[2025-10-15 01:33:52] REQUEST {"id":"25"}
+array (
+  'ok' => true,
+  'status' => 400,
+  'json' => 
+  array (
+    'success' => false,
+    'status' => 400,
+    'message' => 'orden inválido. Use: stock_desc | stock_asc | nombre_asc',
+    'data' => NULL,
+  ),
+)
+----
+2025-10-14T19:19:18-06:00 EXCEPTION: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`sistema_ventas`.`tb_ventas`, CONSTRAINT `tb_ventas_ibfk_1` FOREIGN KEY (`nro_venta`) REFERENCES `tb_carrito` (`nro_venta`) ON DELETE NO ACTION ON UPDATE NO ACTION)
+2025-10-14T19:19:47-06:00 EXCEPTION: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`sistema_ventas`.`tb_ventas`, CONSTRAINT `tb_ventas_ibfk_1` FOREIGN KEY (`nro_venta`) REFERENCES `tb_carrito` (`nro_venta`) ON DELETE NO ACTION ON UPDATE NO ACTION)
+2025-10-14T19:25:07-06:00 ERROR adjust payload1={"id_producto":42,"delta":-10,"reason":"venta nro 4"} payload2={"productId":42,"delta":-10,"reason":"venta nro 4"} payload3={"productId":42,"quantity":10,"type":"SUBTRACT","reason":"venta nro 4"} resp={"ok":true,"status":400,"json":{"success":false,"status":400,"message":"id_producto debe ser un entero","data":null}}
+2025-10-14T19:25:07-06:00 EXCEPTION: Error ajustando inventario remoto para producto 42
+2025-10-14T20:29:05-06:00 ERROR adjust payload1={"id_producto":42,"delta":-10,"reason":"venta nro 4"} payload2={"productId":42,"delta":-10,"reason":"venta nro 4"} payload3={"productId":42,"quantity":10,"type":"SUBTRACT","reason":"venta nro 4"} resp={"ok":true,"status":400,"json":{"success":false,"status":400,"message":"id_producto debe ser un entero","data":null}}
+2025-10-14T20:29:05-06:00 EXCEPTION: Error ajustando inventario remoto para producto 42
+2025-10-14T20:29:55-06:00 ERROR adjust payload1={"id_producto":42,"delta":-10,"reason":"venta nro 4"} payload2={"productId":42,"delta":-10,"reason":"venta nro 4"} payload3={"productId":42,"quantity":10,"type":"SUBTRACT","reason":"venta nro 4"} resp={"ok":true,"status":400,"json":{"success":false,"status":400,"message":"id_producto debe ser un entero","data":null}}
+2025-10-14T20:29:55-06:00 EXCEPTION: Error ajustando inventario remoto para producto 42
+2025-10-14T20:39:39-06:00 EXCEPTION: There is no active transaction
+2025-10-14T20:40:21-06:00 EXCEPTION: There is no active transaction
+2025-10-14T21:02:54-06:00 WARN adjust ventas_externas nro=4 product=42 resp={"ok":true,"status":400,"json":{"success":false,"status":400,"message":"id_producto debe ser un entero","data":null}}
+2025-10-14T21:27:18-06:00 WARN adjust ventas_externas nro=4 product=42 resp={"ok":true,"status":400,"json":{"success":false,"status":400,"message":"id_producto debe ser un entero","data":null}}
+2025-10-14T21:27:19-06:00 WARN adjust ventas_externas nro=4 product=20 resp={"ok":true,"status":400,"json":{"success":false,"status":400,"message":"id_producto debe ser un entero","data":null}}
+2025-10-14T21:27:20-06:00 WARN adjust ventas_externas nro=4 product=23 resp={"ok":true,"status":400,"json":{"success":false,"status":400,"message":"id_producto debe ser un entero","data":null}}

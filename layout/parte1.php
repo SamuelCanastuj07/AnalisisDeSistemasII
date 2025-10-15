@@ -183,6 +183,12 @@ if(isset($_SESSION['mensaje2'])) {
                 </a>
               </li>
               <li class="nav-item">
+                <a href="<?php echo $URL;?>/almacen2" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Productos externos</p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="<?php echo $URL;?>/almacen/create.php" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Creacion de Productos</p>
@@ -253,6 +259,12 @@ if(isset($_SESSION['mensaje2'])) {
                 <a href="<?php echo $URL;?>/ventas/create.php" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Realizar Venta</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="<?php echo $URL;?>/ventas2/create.php" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Venta externa</p>
                 </a>
               </li>
             </ul>
