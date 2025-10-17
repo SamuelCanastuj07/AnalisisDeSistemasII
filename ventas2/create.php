@@ -614,7 +614,7 @@ if(isset($_SESSION['mensaje1'])) {
                               function guardar_venta_externas(){
                                 var url = "../app/controllers/ventas/registro_de_ventas_externas.php";
                                 var monto_total = $('#total_cancelar').val();
-                                $.get(url, {nro_venta:nro_venta, monto_total:monto_total}, function(datos){
+                                $.get(url, {nro_venta:nro_venta, id_cliente: id_cliente, monto_total:monto_total}, function(datos){
                                   $('#respuesta_registro_venta').html(datos);
                                 });
                               }

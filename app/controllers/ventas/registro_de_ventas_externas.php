@@ -8,6 +8,7 @@ if (session_status() === PHP_SESSION_NONE) { session_start(); }
 $usuarioSesion = isset($_SESSION['sesion_email']) ? $_SESSION['sesion_email'] : 'Sistema';
 
 $nro_venta = isset($_GET['nro_venta']) ? $_GET['nro_venta'] : '';
+$id_cliente = isset($_GET['id_cliente']) ? (int)$_GET['id_cliente'] : null;
 if ($nro_venta === '') {
     echo '<script>alert("Falta nro_venta"); location.href = "'.$URL.'/ventas2/create.php";</script>';
     exit;
@@ -27,6 +28,8 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS tb_carrito_externo (
 // Asegurar existencia de tabla de ventas externas (según estructura brindada)
 $pdo->exec("CREATE TABLE IF NOT EXISTS tb_ventas_externas (
     id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nro_venta VARCHAR(100) DEFAULT '',
+    id_cliente INT NULL,
     nombre VARCHAR(255) NOT NULL,
     stock_total VARCHAR(50) NOT NULL,
     ubicaciones VARCHAR(255) NOT NULL,
@@ -36,6 +39,9 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS tb_ventas_externas (
 
 // Intentar agregar columna external_id si la tabla ya existía sin ella (ignorar errores)
 try { $pdo->exec("ALTER TABLE tb_ventas_externas ADD COLUMN IF NOT EXISTS external_id INT DEFAULT 0"); } catch (Exception $e) { /* noop */ }
+// Nuevas columnas para agrupar por venta y asociar cliente
+try { $pdo->exec("ALTER TABLE tb_ventas_externas ADD COLUMN IF NOT EXISTS nro_venta VARCHAR(100) DEFAULT ''"); } catch (Exception $e) { /* noop */ }
+try { $pdo->exec("ALTER TABLE tb_ventas_externas ADD COLUMN IF NOT EXISTS id_cliente INT NULL"); } catch (Exception $e) { /* noop */ }
 
 // Obtener ítems del carrito externo
 $stmt = $pdo->prepare("SELECT * FROM tb_carrito_externo WHERE nro_venta = :nv ORDER BY id_carrito_externo ASC");
@@ -49,7 +55,7 @@ if (!$items || count($items) === 0) {
 }
 
 $monto_total = isset($_GET['monto_total']) ? $_GET['monto_total'] : 0;
-$ins = $pdo->prepare("INSERT INTO tb_ventas_externas (nombre, stock_total, ubicaciones, precio, external_id) VALUES (:nombre, :stock_total, :ubicaciones, :precio, :external_id)");
+$ins = $pdo->prepare("INSERT INTO tb_ventas_externas (nro_venta, id_cliente, nombre, stock_total, ubicaciones, precio, external_id) VALUES (:nro_venta, :id_cliente, :nombre, :stock_total, :ubicaciones, :precio, :external_id)");
 
 // Best-effort: ajustar inventario remoto si está configurado
 $cfg = require __DIR__ . '/../almacen2/config_api.php';
@@ -60,6 +66,8 @@ foreach ($items as $it) {
     $ubi = isset($it['ubicacion']) ? $it['ubicacion'] : '';
 
     $ins->execute([
+        ':nro_venta' => $nro_venta,
+        ':id_cliente' => $id_cliente,
         ':nombre' => $nombre,
         ':stock_total' => $cant,
         ':ubicaciones' => $ubi,

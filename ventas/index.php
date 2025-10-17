@@ -327,28 +327,141 @@ if(isset($_SESSION['mensaje6'])) {
                         <thead>
                           <tr>
                             <th><center>#</center></th>
-                            <th><center>Nombre</center></th>
-                            <th><center>Cantidad</center></th>
-                            <th><center>Ubicaciones</center></th>
-                            <th><center>Monto a Cancelar</center></th>
-                            <th><center>Acción</center></th>
+                            <th><center>Nro Venta</center></th>
+                            <th><center>Monto Total</center></th>
+                            <th><center>Productos</center></th>
+                            <th><center>Cliente</center></th>
+                            <th><center>Acciones</center></th>
                           </tr>
                         </thead>
                         <tbody>
-                          <?php $i=0; foreach(($datos_ventas_externas ?? []) as $ve){ ?>
+                          <?php
+                          $i = 0;
+                          if (($datos_ventas_externas['modo'] ?? '') === 'agrupado') {
+                            foreach (($datos_ventas_externas['grupos'] ?? []) as $grp) {
+                              $i++;
+                              $nro = htmlspecialchars($grp['nro_venta']);
+                              $idCli = (int)$grp['id_cliente'];
+                              $nombreCli = htmlspecialchars($datos_ventas_externas['clientes'][$idCli] ?? '');
+                              $montoTotal = htmlspecialchars($grp['monto_total']);
+                          ?>
                             <tr>
-                              <td><center><?php echo ++$i; ?></center></td>
-                              <td><center><?php echo htmlspecialchars($ve['nombre']); ?></center></td>
-                              <td><center><?php echo htmlspecialchars($ve['stock_total']); ?></center></td>
-                              <td><center><?php echo htmlspecialchars($ve['ubicaciones']); ?></center></td>
-                              <td><center><?php echo htmlspecialchars($ve['precio']); ?></center></td>
-                              <td><center>
-                                <a href="../app/controllers/ventas/delete_venta_externa.php?id_producto=<?php echo urlencode($ve['id_producto']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta venta externa y revertir el stock?');">
-                                  Eliminar
-                                </a>
-                              </center></td>
+                              <td><center><?php echo $i; ?></center></td>
+                              <td><center><?php echo $nro; ?></center></td>
+                              <td><center>Q<?php echo $montoTotal; ?></center></td>
+                              <td>
+                                <center>
+                                  <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal_ext_prod_<?php echo $nro; ?>">Productos</button>
+                                  <div class="modal fade" id="modal_ext_prod_<?php echo $nro; ?>" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                      <div class="modal-content">
+                                        <div class="modal-header" style="background-color:#08c2ec;">
+                                          <h5 class="modal-title">Productos de la Venta Externa <?php echo $nro; ?></h5>
+                                          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                        </div>
+                                        <div class="modal-body">
+                                          <div class="table-responsive">
+                                            <table class="table table-bordered table-striped table-sm table-hover">
+                                              <thead>
+                                                <tr>
+                                                  <th><center>#</center></th>
+                                                  <th><center>Producto</center></th>
+                                                  <th><center>Cantidad</center></th>
+                                                  <th><center>Ubicaciones</center></th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                <?php
+                                                $sql = "SELECT * FROM tb_ventas_externas WHERE nro_venta = :nv ORDER BY id_producto ASC";
+                                                $st = $pdo->prepare($sql);
+                                                $st->execute([':nv' => $grp['nro_venta']]);
+                                                $rows = $st->fetchAll(PDO::FETCH_ASSOC);
+                                                $c=0; $cant_t=0;
+                                                foreach($rows as $r){ $c++; $cant_t += (float)$r['stock_total']; ?>
+                                                  <tr>
+                                                    <td><center><?php echo $c; ?></center></td>
+                                                    <td><center><?php echo htmlspecialchars($r['nombre']); ?></center></td>
+                                                    <td><center><?php echo htmlspecialchars($r['stock_total']); ?></center></td>
+                                                    <td><center><?php echo htmlspecialchars($r['ubicaciones']); ?></center></td>
+                                                  </tr>
+                                                <?php } ?>
+                                                <tr>
+                                                  <td colspan="2" style="text-align:right;font-weight:bold;">Total:</td>
+                                                  <td><b><center><?php echo $cant_t; ?></center></b></td>
+                                                  <td></td>
+                                                </tr>
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </center>
+                              </td>
+                              <td>
+                                <center>
+                                  <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#modal_ext_cli_<?php echo $nro; ?>"><?php echo $nombreCli ?: '—'; ?></button>
+                                  <div class="modal fade" id="modal_ext_cli_<?php echo $nro; ?>">
+                                    <div class="modal-dialog modal-sm">
+                                      <div class="modal-content">
+                                        <div class="modal-header" style="background-color:#FDD600; color:black;">
+                                          <h4 class="modal-title">Cliente</h4>
+                                          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                                        </div>
+                                        <div class="modal-body">
+                                          <?php
+                                            $cli = ['nombre_cliente'=>'','nit_ci_cliente'=>'','celular_cliente'=>'','email_cliente'=>''];
+                                            if ($idCli > 0) {
+                                              $qc = $pdo->prepare("SELECT * FROM tb_clientes WHERE id_cliente = :id LIMIT 1");
+                                              $qc->execute([':id'=>$idCli]);
+                                              $cli = $qc->fetch(PDO::FETCH_ASSOC) ?: $cli;
+                                            }
+                                          ?>
+                                          <div class="form-group">
+                                            <label>Nombre del Cliente</label>
+                                            <input type="text" class="form-control" value="<?php echo htmlspecialchars($cli['nombre_cliente']); ?>" disabled>
+                                          </div>
+                                          <div class="form-group">
+                                            <label>NIT/DPI del Cliente</label>
+                                            <input type="text" class="form-control" value="<?php echo htmlspecialchars($cli['nit_ci_cliente']); ?>" disabled>
+                                          </div>
+                                          <div class="form-group">
+                                            <label>Celular del Cliente</label>
+                                            <input type="text" class="form-control" value="<?php echo htmlspecialchars($cli['celular_cliente']); ?>" disabled>
+                                          </div>
+                                          <div class="form-group">
+                                            <label>Correo del Cliente</label>
+                                            <input type="text" class="form-control" value="<?php echo htmlspecialchars($cli['email_cliente']); ?>" disabled>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </center>
+                              </td>
+                              <td>
+                                <center>
+                                  <a href="../app/controllers/ventas/delete_venta_externa_group.php?nro_venta=<?php echo urlencode($grp['nro_venta']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar toda la venta externa y revertir stock?');">Eliminar</a>
+                                </center>
+                              </td>
                             </tr>
-                          <?php } ?>
+                          <?php }
+                          } else {
+                            // Modo simple (compatibilidad)
+                            $i = 0; foreach((($datos_ventas_externas['filas'] ?? [])) as $ve){ ?>
+                              <tr>
+                                <td><center><?php echo ++$i; ?></center></td>
+                                <td><center>—</center></td>
+                                <td><center><?php echo htmlspecialchars($ve['precio']); ?></center></td>
+                                <td><center><?php echo htmlspecialchars($ve['nombre']); ?> (x<?php echo htmlspecialchars($ve['stock_total']); ?>)</center></td>
+                                <td><center>—</center></td>
+                                <td><center>
+                                  <a href="../app/controllers/ventas/delete_venta_externa.php?id_producto=<?php echo urlencode($ve['id_producto']); ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar esta venta externa y revertir el stock?');">Eliminar</a>
+                                </center></td>
+                              </tr>
+                          <?php } }
+                          ?>
                         </tbody>
                       </table>
                     </div>
@@ -356,22 +469,60 @@ if(isset($_SESSION['mensaje6'])) {
                 </div>
               </div>
             </div>
+            
             <script>
-            $(function(){
-              $("#example_ext").DataTable({
-                pageLength:5,
-                language:{
-                  emptyTable:"No hay información",
-                  info:"Mostrando _START_ a _END_ de _TOTAL_ Ventas externas",
-                  lengthMenu:"Mostrar _MENU_",
-                  search:"Buscador:",
-                  zeroRecords:"Sin resultados",
-                  paginate:{first:"Primero",last:"Último",next:"Siguiente",previous:"Anterior"}
-                },
-                responsive:true, lengthChange:true, autoWidth:false
-              });
-            });
-            </script>
+  $(function () {
+    $("#example_ext").DataTable({
+        "pageLength": 5,
+          language: {
+              "emptyTable": "No hay información",
+              "decimal": "",
+              "info": "Mostrando _START_ a _END_ de _TOTAL_ ventas externas",
+              "infoEmpty": "Mostrando 0 to 0 of 0 ventas externas",
+              "infoFiltered": "(Filtrado de _MAX_ total ventas externas)",
+              "infoPostFix": "",
+              "thousands": ",",
+              "lengthMenu": "Mostrar _MENU_ ventas externas",
+              "loadingRecords": "Cargando...",
+              "processing": "Procesando...",
+              "search": "Buscador:",
+              "zeroRecords": "Sin resultados encontrados",
+              "paginate": {
+                  "first": "Primero",
+                  "last": "Ultimo",
+                  "next": "Siguiente",
+                  "previous": "Anterior"
+              }
+             },
+      "responsive": true, "lengthChange": true, "autoWidth": false,
+        buttons: [{
+                        extend: 'collection',
+                        text: 'Reportes',
+                        orientation: 'landscape',
+                        buttons: [{
+                            text: 'Copiar',
+                            extend: 'copy'
+                        }, {
+                            extend: 'pdf',
+                        }, {
+                            extend: 'csv',
+                        }, {
+                            extend: 'excel',
+                        }, {
+                            text: 'Imprimir',
+                            extend: 'print'
+                        }
+                        ]
+                    },
+                        {
+                            extend: 'colvis',
+                            text: 'Visor de columnas'
+                           // collectionLayout: 'fixed three-column',
+                        }
+                    ],
+    }).buttons().container().appendTo('#example_ext_wrapper .col-md-6:eq(0)');
+  });
+</script>
       </div><!-- /.container-fluid -->
     </div>
     <!-- /.content -->
@@ -390,12 +541,12 @@ if(isset($_SESSION['mensaje6'])) {
           language: {
               "emptyTable": "No hay información",
               "decimal": "",
-              "info": "Mostrando _START_ a _END_ de _TOTAL_ Compras",
-              "infoEmpty": "Mostrando 0 to 0 of 0 Compras",
-              "infoFiltered": "(Filtrado de _MAX_ total Compras)",
+              "info": "Mostrando _START_ a _END_ de _TOTAL_ Ventas",
+              "infoEmpty": "Mostrando 0 to 0 of 0 Ventas",
+              "infoFiltered": "(Filtrado de _MAX_ total Ventas)",
               "infoPostFix": "",
               "thousands": ",",
-              "lengthMenu": "Mostrar _MENU_ Compras",
+              "lengthMenu": "Mostrar _MENU_ Ventas",
               "loadingRecords": "Cargando...",
               "processing": "Procesando...",
               "search": "Buscador:",
